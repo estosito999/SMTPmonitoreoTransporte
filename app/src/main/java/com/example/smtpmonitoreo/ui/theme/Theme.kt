@@ -40,25 +40,21 @@ private val FuturisticDarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun SMTPmonitoreoTheme(
-    darkTheme: Boolean = true, // Defaulting to dark cyber theme for high tech aesthetics
-    content: @Composable () -> Unit
-) {
-    val colorScheme = FuturisticDarkColorScheme
+fun SMTPmonitoreoTheme(content: @Composable () -> Unit) {
     val view = LocalView.current
 
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            window.navigationBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = false
+                isAppearanceLightNavigationBars = false
+            }
         }
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = FuturisticDarkColorScheme,
         typography = Typography,
         content = content
     )
