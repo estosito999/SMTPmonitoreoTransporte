@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
-class AuthRepositoryImpl private constructor() : AuthRepository {
-
+class AuthRepositoryImpl : AuthRepository {
     private val _currentUserFlow = MutableStateFlow<UserAccount?>(null)
     override val currentUserFlow: StateFlow<UserAccount?> = _currentUserFlow.asStateFlow()
 
@@ -191,7 +190,5 @@ class AuthRepositoryImpl private constructor() : AuthRepository {
         }
     }
 
-    companion object {
-        val instance: AuthRepository by lazy { AuthRepositoryImpl() }
-    }
+
 }

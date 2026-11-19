@@ -26,19 +26,20 @@ import com.example.smtpmonitoreo.data.model.TransportUnit
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.data.repository.MonitoringRepository
-import com.example.smtpmonitoreo.data.repository.MonitoringRepositoryImpl
+import org.koin.compose.koinInject
 import com.example.smtpmonitoreo.ui.components.DashboardTopBar
 import com.example.smtpmonitoreo.ui.components.NetworkStatusBanner
 import com.example.smtpmonitoreo.ui.components.SmtpMapView
 import com.example.smtpmonitoreo.ui.theme.*
 import kotlinx.coroutines.launch
+import com.example.smtpmonitoreo.data.model.InfractionStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlcaldiaDashboard(
     user: UserAccount,
     onLogout: () -> Unit,
-    repository: MonitoringRepository = MonitoringRepositoryImpl.instance
+    repository: MonitoringRepository = koinInject()
 ) {
     val activeUnits by repository.activeUnitsFlow.collectAsState()
     val routes by repository.routesFlow.collectAsState()
@@ -412,7 +413,7 @@ fun AlcaldiaDashboard(
                                                 reason = infReason,
                                                 fineAmountBs = infAmount.toDoubleOrNull() ?: 100.0,
                                                 date = "24/05/2026",
-                                                status = "EMITIDA"
+                                                status = InfractionStatus.EMITIDA
                                             )
                                         )
                                         infPlate = ""

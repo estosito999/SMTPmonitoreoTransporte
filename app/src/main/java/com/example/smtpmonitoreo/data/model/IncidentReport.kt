@@ -7,7 +7,7 @@ data class IncidentReport(
     val lineNumber: String = "",
     val category: String = "Cobro irregular",
     val description: String = "",
-    val status: String = "RECIBIDO", // RECIBIDO, EN_REVISION, RESUELTO
+    val status: IncidentStatus = IncidentStatus.RECIBIDO,
     val timestamp: Long = System.currentTimeMillis(),
     val resolutionNote: String = ""
 )

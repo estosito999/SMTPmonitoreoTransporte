@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.data.repository.AuthRepository
-import com.example.smtpmonitoreo.data.repository.AuthRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +23,7 @@ data class AuthUiState(
 )
 
 class AuthViewModel(
-    private val repository: AuthRepository = AuthRepositoryImpl.instance
+    private val repository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())

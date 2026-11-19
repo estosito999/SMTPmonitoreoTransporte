@@ -28,19 +28,20 @@ import com.example.smtpmonitoreo.data.model.TransportUnit
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.data.repository.MonitoringRepository
-import com.example.smtpmonitoreo.data.repository.MonitoringRepositoryImpl
+import org.koin.compose.koinInject
 import com.example.smtpmonitoreo.ui.components.DashboardTopBar
 import com.example.smtpmonitoreo.ui.components.NetworkStatusBanner
 import com.example.smtpmonitoreo.ui.components.SmtpMapView
 import com.example.smtpmonitoreo.ui.theme.*
 import kotlinx.coroutines.launch
+import com.example.smtpmonitoreo.data.model.IncidentStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasajeroDashboard(
     user: UserAccount,
     onLogout: () -> Unit,
-    repository: MonitoringRepository = MonitoringRepositoryImpl.instance
+    repository: MonitoringRepository = koinInject()
 ) {
     val activeUnits by repository.activeUnitsFlow.collectAsState()
     val routes by repository.routesFlow.collectAsState()
@@ -517,18 +518,18 @@ fun PasajeroDashboard(
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = when (inc.status) {
-                                        "RESUELTO" -> CyberEmerald.copy(alpha = 0.2f)
-                                        "EN_REVISION" -> CyberAmber.copy(alpha = 0.2f)
+                                        IncidentStatus.RESUELTO -> CyberEmerald.copy(alpha = 0.2f)
+                                        IncidentStatus.EN_REVISION -> CyberAmber.copy(alpha = 0.2f)
                                         else -> CyberRose.copy(alpha = 0.2f)
                                     }
                                 ) {
                                     Text(
-                                        text = inc.status,
+                                        text = inc.status.label,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = when (inc.status) {
-                                            "RESUELTO" -> CyberEmerald
-                                            "EN_REVISION" -> CyberAmber
+                                            IncidentStatus.RESUELTO -> CyberEmerald
+                                            IncidentStatus.EN_REVISION -> CyberAmber
                                             else -> CyberRose
                                         },
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

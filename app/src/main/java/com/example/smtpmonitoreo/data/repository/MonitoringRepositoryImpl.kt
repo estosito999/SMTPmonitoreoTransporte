@@ -13,10 +13,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.*
+import kotlinx.coroutines.SupervisorJob
+import com.example.smtpmonitoreo.data.model.IncidentStatus
+import com.example.smtpmonitoreo.data.model.InfractionStatus
 
-class MonitoringRepositoryImpl private constructor() : MonitoringRepository {
-
-    private val scope = CoroutineScope(Dispatchers.Default)
+class MonitoringRepositoryImpl : MonitoringRepository {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // Coordenadas emblemáticas de La Paz
     private val perezVelasco = Pair(-16.4965, -68.1375)
@@ -115,7 +117,7 @@ class MonitoringRepositoryImpl private constructor() : MonitoringRepository {
             lineNumber = "102",
             category = "Cobro irregular",
             description = "Cobro de tarifa nocturna a las 17:30 en Pérez Velasco.",
-            status = "RECIBIDO",
+            status = IncidentStatus.RECIBIDO,
             timestamp = System.currentTimeMillis() - 3600000
         ),
         IncidentReport(
@@ -125,7 +127,7 @@ class MonitoringRepositoryImpl private constructor() : MonitoringRepository {
             lineNumber = "231",
             category = "Desvío de ruta",
             description = "El minibús no llegó a Miraflores y cortó ruta en la Plaza Uyuni.",
-            status = "EN_REVISION",
+            status = IncidentStatus.EN_REVISION,
             timestamp = System.currentTimeMillis() - 7200000
         )
     )
@@ -139,7 +141,7 @@ class MonitoringRepositoryImpl private constructor() : MonitoringRepository {
             reason = "Desvío de ruta arbitrario en zona Miraflores",
             fineAmountBs = 100.0,
             date = "24/05/2026",
-            status = "EMITIDA"
+            status = InfractionStatus.EMITIDA
         )
     )
 
@@ -230,13 +232,13 @@ class MonitoringRepositoryImpl private constructor() : MonitoringRepository {
         val newReport = report.copy(
             id = "inc_${System.currentTimeMillis()}",
             timestamp = System.currentTimeMillis(),
-            status = "RECIBIDO"
+            status = IncidentStatus.RECIBIDO
         )
         _incidentsFlow.update { listOf(newReport) + it }
         return Result.success(Unit)
     }
 
-    override suspend fun updateIncidentStatus(reportId: String, newStatus: String, note: String): Result<Unit> {
+    override suspend fun updateIncidentStatus(reportId: String, newStatus: IncidentStatus, note: String): Result<Unit> {
         _incidentsFlow.update { reports ->
             reports.map {
                 if (it.id == reportId) it.copy(status = newStatus, resolutionNote = note) else it
@@ -282,7 +284,5 @@ class MonitoringRepositoryImpl private constructor() : MonitoringRepository {
         return max(1, minutes)
     }
 
-    companion object {
-        val instance: MonitoringRepository by lazy { MonitoringRepositoryImpl() }
-    }
+
 }

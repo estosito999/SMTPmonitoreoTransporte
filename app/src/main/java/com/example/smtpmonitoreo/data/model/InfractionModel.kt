@@ -7,5 +7,5 @@ data class InfractionModel(
     val reason: String = "",
     val fineAmountBs: Double = 100.0,
     val date: String = "",
-    val status: String = "EMITIDA" // EMITIDA, PAGADA, APELADA
+    val status: InfractionStatus = InfractionStatus.EMITIDA
 )

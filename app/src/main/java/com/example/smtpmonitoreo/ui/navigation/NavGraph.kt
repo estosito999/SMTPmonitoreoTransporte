@@ -3,7 +3,7 @@ package com.example.smtpmonitoreo.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,7 +28,7 @@ object NavRoutes {
 @Composable
 fun SmtpNavGraph(
     navController: NavHostController = rememberNavController(),
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = koinViewModel()
 ) {
     val uiState by authViewModel.uiState.collectAsState()
     val currentUser = uiState.loggedInUser
