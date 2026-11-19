@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "360608732215",
+    "project_id": "smtp-a6d40",
+    "storage_bucket": "smtp-a6d40.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360608732215:android:ef10744d7139585b62dbb2",
+        "android_client_info": {
+          "package_name": "com.example.smtpmonitoreo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEheGk8K6vV-gJgVqZfmymJKNByIEwQgI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
