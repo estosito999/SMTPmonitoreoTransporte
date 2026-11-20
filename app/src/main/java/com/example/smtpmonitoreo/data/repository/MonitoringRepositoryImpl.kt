@@ -141,7 +141,7 @@ class MonitoringRepositoryImpl : MonitoringRepository {
             lineNumber = "231",
             reason = "Desvío de ruta arbitrario en zona Miraflores",
             fineAmountBs = 100.0,
-            date = "24/05/2026",
+            timestamp = System.currentTimeMillis() - 86_400_000L,
             status = InfractionStatus.EMITIDA
         )
     )
@@ -251,6 +251,12 @@ class MonitoringRepositoryImpl : MonitoringRepository {
     override suspend fun addInfraction(infraction: InfractionModel): Result<Unit> {
         val newInfraction = infraction.copy(id = "inf_${System.currentTimeMillis()}")
         _infractionsFlow.update { listOf(newInfraction) + it }
+        return Result.success(Unit)
+    }
+    override suspend fun updateInfractionStatus(infractionId: String, newStatus: InfractionStatus): Result<Unit> {
+        _infractionsFlow.update { list ->
+            list.map { if (it.id == infractionId) it.copy(status = newStatus) else it }
+        }
         return Result.success(Unit)
     }
 

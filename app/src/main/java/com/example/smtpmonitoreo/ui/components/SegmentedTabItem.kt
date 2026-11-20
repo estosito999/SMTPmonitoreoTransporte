@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smtpmonitoreo.ui.theme.DarkSurfaceElevated
 import com.example.smtpmonitoreo.ui.theme.TextSecondary
+import androidx.compose.ui.unit.Dp
 
 @Composable
 fun SegmentedTabItem(
@@ -30,6 +31,7 @@ fun SegmentedTabItem(
     icon: ImageVector,
     selected: Boolean,
     accentColor: Color,
+    horizontalPadding: Dp = 0.dp,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -43,7 +45,7 @@ fun SegmentedTabItem(
                 shape = RoundedCornerShape(10.dp)
             )
             .clickable { onClick() }
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = horizontalPadding),
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

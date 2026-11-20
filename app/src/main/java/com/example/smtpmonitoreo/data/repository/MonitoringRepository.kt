@@ -1,12 +1,12 @@
 package com.example.smtpmonitoreo.data.repository
 
 import com.example.smtpmonitoreo.data.model.IncidentReport
+import com.example.smtpmonitoreo.data.model.IncidentStatus
 import com.example.smtpmonitoreo.data.model.InfractionModel
+import com.example.smtpmonitoreo.data.model.InfractionStatus
 import com.example.smtpmonitoreo.data.model.RouteModel
 import com.example.smtpmonitoreo.data.model.TransportUnit
 import kotlinx.coroutines.flow.StateFlow
-import com.example.smtpmonitoreo.data.model.IncidentStatus
-
 
 interface MonitoringRepository {
     val activeUnitsFlow: StateFlow<List<TransportUnit>>
@@ -18,7 +18,9 @@ interface MonitoringRepository {
     suspend fun stopGpsTransmission(plate: String)
     suspend fun updateVehicleLocation(plate: String, lat: Double, lng: Double, speed: Float)
     suspend fun submitIncident(report: IncidentReport): Result<Unit>
-    suspend fun updateIncidentStatus(reportId: String, newStatus: IncidentStatus, note: String = ""): Result<Unit>    suspend fun addInfraction(infraction: InfractionModel): Result<Unit>
+    suspend fun updateIncidentStatus(reportId: String, newStatus: IncidentStatus, note: String = ""): Result<Unit>
+    suspend fun addInfraction(infraction: InfractionModel): Result<Unit>
+    suspend fun updateInfractionStatus(infractionId: String, newStatus: InfractionStatus): Result<Unit>
     suspend fun addRoute(route: RouteModel): Result<Unit>
     suspend fun addUnit(unit: TransportUnit): Result<Unit>
     fun calculateEtaMinutes(unitLat: Double, unitLng: Double, targetLat: Double, targetLng: Double, speedKmh: Float): Int
