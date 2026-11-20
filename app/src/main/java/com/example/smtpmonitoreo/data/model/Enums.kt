@@ -19,3 +19,13 @@ enum class IncidentCategory(val label: String) {
     INSEGURIDAD("Inseguridad"),
     EMERGENCIA("Emergencia")
 }
+enum class AccountStatus(val label: String) {
+    ACTIVO("Activo"),
+    SUSPENDIDO("Suspendido")
+}
+
+enum class LogLevel(val label: String) {
+    INFO("INFO"),
+    WARN("WARN"),
+    ERROR("ERROR")
+}

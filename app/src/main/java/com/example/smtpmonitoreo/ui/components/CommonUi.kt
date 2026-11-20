@@ -32,6 +32,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smtpmonitoreo.ui.theme.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun SectionLabel(text: String, color: Color = TextSecondary) {
@@ -222,5 +227,76 @@ fun CountBars(
                 }
             }
         }
+    }
+}
+/** Tarjeta con un indicador numérico (KPI). */
+@Composable
+fun KpiCard(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, CyberBorder, RoundedCornerShape(16.dp)),
+        color = DarkSurface
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = accentColor,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = value,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextPrimary
+            )
+            Text(
+                text = title,
+                fontSize = 10.sp,
+                color = TextSecondary,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+/** Chip de filtro seleccionable. */
+@Composable
+fun FilterPill(
+    label: String,
+    selected: Boolean,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { onClick() },
+        color = if (selected) color.copy(alpha = 0.2f) else DarkSurfaceVariant,
+        border = BorderStroke(1.dp, if (selected) color else CyberBorder)
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (selected) color else TextSecondary,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        )
     }
 }
