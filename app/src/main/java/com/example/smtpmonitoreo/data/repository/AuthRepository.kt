@@ -23,6 +23,4 @@ interface AuthRepository {
     suspend fun logout()
     fun getCurrentUser(): UserAccount?
 
-    /** Sesión local de demostración (sin Firebase). Solo disponible en builds de debug. */
-    suspend fun quickLoginAsRole(role: UserRole): Result<UserAccount>
 }

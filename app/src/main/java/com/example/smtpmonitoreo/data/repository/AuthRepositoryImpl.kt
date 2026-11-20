@@ -1,6 +1,6 @@
 package com.example.smtpmonitoreo.data.repository
 
-import com.example.smtpmonitoreo.BuildConfig
+
 import com.example.smtpmonitoreo.data.model.AccountStatus
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
@@ -78,16 +78,7 @@ class AuthRepositoryImpl(
         publish(null)
     }
 
-    // ---------- Demo local (solo debug) ----------
 
-    override suspend fun quickLoginAsRole(role: UserRole): Result<UserAccount> {
-        if (!BuildConfig.DEMO_MODE) {
-            return Result.failure(IllegalStateException("El acceso de demostración no está disponible."))
-        }
-        val account = demoAccount(role)
-        publish(account)
-        return Result.success(account)
-    }
 
     // ---------- Internos ----------
 
@@ -159,24 +150,7 @@ class AuthRepositoryImpl(
         "createdAt" to createdAt
     )
 
-    private fun demoAccount(role: UserRole): UserAccount = when (role) {
-        UserRole.PASAJERO -> UserAccount(
-            uid = "demo_pasajero", email = "pasajero.demo@smtp.lapaz.bo",
-            fullName = "Carlos Mendoza", role = role
-        )
-        UserRole.CHOFER -> UserAccount(
-            uid = "demo_chofer", email = "chofer.minibus102@smtp.lapaz.bo",
-            fullName = "Don Rolando Mamani", role = role
-        )
-        UserRole.ALCALDIA -> UserAccount(
-            uid = "demo_alcaldia", email = "alcaldia.control@smtp.lapaz.bo",
-            fullName = "Ing. Laura Quispe", role = role
-        )
-        UserRole.ADMINISTRADOR -> UserAccount(
-            uid = "demo_admin", email = "admin.master@smtp.lapaz.bo",
-            fullName = "Admin Israel Pérez", role = role
-        )
-    }
+
 
     /** Ejecuta el bloque y traduce cualquier error a un mensaje para el usuario. */
     private inline fun <T> attempt(block: () -> T): Result<T> =

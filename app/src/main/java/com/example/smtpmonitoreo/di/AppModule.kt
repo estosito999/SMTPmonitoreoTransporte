@@ -1,5 +1,6 @@
 package com.example.smtpmonitoreo.di
 
+import com.example.smtpmonitoreo.data.demo.DemoSeeder
 import com.example.smtpmonitoreo.data.repository.AdminRepository
 import com.example.smtpmonitoreo.data.repository.AdminRepositoryImpl
 import com.example.smtpmonitoreo.data.repository.AuthRepository
@@ -23,8 +24,9 @@ val firebaseModule = module {
 
 val dataModule = module {
     single<AuthRepository> { AuthRepositoryImpl(auth = get(), db = get()) }
-    single<MonitoringRepository> { MonitoringRepositoryImpl() }
-    single<AdminRepository> { AdminRepositoryImpl() }
+    single<MonitoringRepository> { MonitoringRepositoryImpl(db = get(), auth = get()) }
+    single<AdminRepository> { AdminRepositoryImpl(db = get(), auth = get()) }
+    single { DemoSeeder(db = get()) }
 }
 
 val viewModelModule = module {

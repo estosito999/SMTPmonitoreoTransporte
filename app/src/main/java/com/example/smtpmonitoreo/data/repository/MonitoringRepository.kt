@@ -14,7 +14,7 @@ interface MonitoringRepository {
     val incidentsFlow: StateFlow<List<IncidentReport>>
     val infractionsFlow: StateFlow<List<InfractionModel>>
 
-    suspend fun startGpsTransmission(plate: String, lineNumber: String)
+    suspend fun startGpsTransmission(plate: String)
     suspend fun stopGpsTransmission(plate: String)
     suspend fun updateVehicleLocation(plate: String, lat: Double, lng: Double, speed: Float)
     suspend fun submitIncident(report: IncidentReport): Result<Unit>

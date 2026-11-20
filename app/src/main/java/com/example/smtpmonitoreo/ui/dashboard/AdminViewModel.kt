@@ -2,6 +2,7 @@ package com.example.smtpmonitoreo.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smtpmonitoreo.data.demo.DemoSeeder
 import com.example.smtpmonitoreo.data.model.AccountStatus
 import com.example.smtpmonitoreo.data.model.IncidentReport
 import com.example.smtpmonitoreo.data.model.LogLevel
@@ -12,11 +13,9 @@ import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.data.repository.AdminRepository
 import com.example.smtpmonitoreo.data.repository.AuthRepository
 import com.example.smtpmonitoreo.data.repository.MonitoringRepository
-import com.example.smtpmonitoreo.domain.AccountDraft
 import com.example.smtpmonitoreo.domain.HealthCalculator
 import com.example.smtpmonitoreo.domain.SystemHealth
 import com.example.smtpmonitoreo.domain.UserAdminRules
-import com.example.smtpmonitoreo.domain.Validation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,8 +41,6 @@ data class AdminUiState(
 
     // Cuentas (RF-50, RF-51)
     val search: String = "",
-    val accountDraft: AccountDraft = AccountDraft(),
-    val formError: String? = null,
 
     // Sistema y logs
     val logFilter: LogLevel? = null
@@ -72,7 +69,8 @@ private data class AdminSnapshot(
 class AdminViewModel(
     private val admin: AdminRepository,
     private val monitoring: MonitoringRepository,
-    private val auth: AuthRepository
+    private val auth: AuthRepository,
+    private val seeder: DemoSeeder
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AdminUiState())
@@ -108,32 +106,6 @@ class AdminViewModel(
 
     fun onSearchChanged(query: String) =
         _state.update { it.copy(search = query) }
-
-    fun onAccountDraftChanged(draft: AccountDraft) =
-        _state.update { it.copy(accountDraft = draft, formError = null, notice = null) }
-
-    fun createAccount() {
-        val s = _state.value
-        when (val result = UserAdminRules.validateNewAccount(s.accountDraft, s.users)) {
-            is Validation.Error -> _state.update { it.copy(formError = result.message) }
-            is Validation.Ok -> viewModelScope.launch {
-                admin.createUser(result.value)
-                    .onSuccess {
-                        audit("creó la cuenta ${result.value.email} (${result.value.role.displayName})")
-                        _state.update {
-                            it.copy(
-                                accountDraft = AccountDraft(),
-                                formError = null,
-                                notice = Notice("Cuenta creada: ${result.value.fullName}.")
-                            )
-                        }
-                    }
-                    .onFailure { e ->
-                        _state.update { it.copy(formError = e.localizedMessage ?: "No se pudo crear la cuenta.") }
-                    }
-            }
-        }
-    }
 
     fun changeRole(target: UserAccount, newRole: UserRole) {
         if (target.role == newRole) return
@@ -183,6 +155,20 @@ class AdminViewModel(
 
     fun onLogFilterSelected(level: LogLevel?) =
         _state.update { it.copy(logFilter = level) }
+
+    /** Solo debug: carga rutas, unidades, reportes e infracciones de ejemplo en Firestore. */
+    fun seedDemoData() {
+        viewModelScope.launch {
+            seeder.seed()
+                .onSuccess {
+                    audit("cargó los datos de ejemplo")
+                    showNotice("Datos de ejemplo cargados en Firestore.")
+                }
+                .onFailure { e ->
+                    showNotice(e.localizedMessage ?: "No se pudieron cargar los datos de ejemplo.", isError = true)
+                }
+        }
+    }
 
     // ---------- Utilidades ----------
 

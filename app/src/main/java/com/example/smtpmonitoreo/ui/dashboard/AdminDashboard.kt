@@ -107,8 +107,6 @@ fun AdminDashboard(
             when (state.tab) {
                 AdminTab.CUENTAS -> CuentasTab(
                     state = state,
-                    onDraftChanged = viewModel::onAccountDraftChanged,
-                    onCreate = viewModel::createAccount,
                     onSearchChanged = viewModel::onSearchChanged,
                     onChangeRole = viewModel::changeRole,
                     onToggleStatus = viewModel::toggleStatus
@@ -117,7 +115,8 @@ fun AdminDashboard(
                 AdminTab.SISTEMA -> SistemaTab(
                     state = state,
                     onLogFilterSelected = viewModel::onLogFilterSelected,
-                    onSwitchRolePreview = onSwitchRolePreview
+                    onSwitchRolePreview = onSwitchRolePreview,
+                    onSeedDemoData = viewModel::seedDemoData
                 )
             }
 
@@ -132,63 +131,19 @@ fun AdminDashboard(
 @Composable
 private fun CuentasTab(
     state: AdminUiState,
-    onDraftChanged: (AccountDraft) -> Unit,
-    onCreate: () -> Unit,
     onSearchChanged: (String) -> Unit,
     onChangeRole: (UserAccount, UserRole) -> Unit,
     onToggleStatus: (UserAccount) -> Unit
 ) {
-    val d = state.accountDraft
-
-    SectionLabel("CREAR NUEVA CUENTA DE USUARIO", RoleAdminColor)
-    Spacer(modifier = Modifier.height(10.dp))
-
-    FormCard {
-        AppTextField(
-            value = d.fullName,
-            onValueChange = { onDraftChanged(d.copy(fullName = it)) },
-            label = "Nombre Completo",
-            accent = RoleAdminColor
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        AppTextField(
-            value = d.email,
-            onValueChange = { onDraftChanged(d.copy(email = it)) },
-            label = "Correo Electrónico",
-            accent = RoleAdminColor
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text("Rol Asignado", fontSize = 12.sp, color = TextSecondary)
-        Spacer(modifier = Modifier.height(6.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            UserRole.entries.forEach { role ->
-                RoleChip(
-                    role = role,
-                    selected = d.role == role,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onDraftChanged(d.copy(role = role)) }
-                )
-            }
-        }
-
-        FormError(state.formError)
-        Spacer(modifier = Modifier.height(14.dp))
-        ActionButton(
-            text = "REGISTRAR USUARIO Y ROL",
-            color = RoleAdminColor,
-            contentColor = DarkBackground,
-            onClick = onCreate
-        )
-    }
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    SectionLabel("CUENTAS REGISTRADAS Y PERMISOS (${state.users.size})")
-    Spacer(modifier = Modifier.height(10.dp))
+    SectionLabel("CUENTAS REGISTRADAS Y PERMISOS (${state.users.size})", RoleAdminColor)
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = "Las cuentas se crean cuando cada persona se registra en la app (siempre como Pasajero). " +
+                "Desde aquí le asignas su rol o la suspendes.",
+        fontSize = 11.sp,
+        color = TextSecondary
+    )
+    Spacer(modifier = Modifier.height(12.dp))
 
     AppTextField(
         value = state.search,

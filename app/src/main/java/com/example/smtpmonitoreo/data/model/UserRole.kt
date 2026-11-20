@@ -30,6 +30,8 @@ enum class UserRole(
         subtitle = "Gestión de Sistema",
         description = "Administra usuarios, asigna roles, supervisa permisos y monitorea logs."
     );
+    /** Roles con permisos de supervisión (leen todos los reportes e infracciones). */
+    val isStaff: Boolean get() = this == ALCALDIA || this == ADMINISTRADOR
 
     companion object {
         fun fromString(value: String?): UserRole {

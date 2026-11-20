@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.smtpmonitoreo.domain.DemoAccounts
 
 data class AuthUiState(
     val email: String = "",
@@ -67,11 +68,11 @@ class AuthViewModel(
         }
     }
 
-    /** Solo debug: sesión local de demostración. */
-    fun quickLoginAs(role: UserRole) {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch { finish(repository.quickLoginAsRole(role)) }
-    }
+    /** Solo debug: rellena el correo de la cuenta de prueba de ese rol. */
+    fun prefillDemoAccount(role: UserRole) =
+        _uiState.update {
+            it.copy(email = DemoAccounts.emailFor(role), password = "", errorMessage = null)
+        }
 
     fun logout() {
         viewModelScope.launch { repository.logout() }

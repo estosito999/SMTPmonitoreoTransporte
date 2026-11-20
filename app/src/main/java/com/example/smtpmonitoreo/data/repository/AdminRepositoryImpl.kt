@@ -5,62 +5,67 @@ import com.example.smtpmonitoreo.data.model.LogLevel
 import com.example.smtpmonitoreo.data.model.SystemLog
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import java.util.UUID
+import kotlinx.coroutines.tasks.await
 
-private const val MAX_LOGS = 200
+private const val MAX_LOGS = 100L
 
-class AdminRepositoryImpl : AdminRepository {
+class AdminRepositoryImpl(
+    db: FirebaseFirestore,
+    auth: AuthRepository
+) : AdminRepository {
 
-    private val startedAt = System.currentTimeMillis()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _usersFlow = MutableStateFlow(
-        listOf(
-            UserAccount(uid = "u1", email = "pasajero.demo@smtp.lapaz.bo", fullName = "Carlos Mendoza", role = UserRole.PASAJERO),
-            UserAccount(uid = "u2", email = "chofer.minibus102@smtp.lapaz.bo", fullName = "Don Rolando Mamani", role = UserRole.CHOFER),
-            UserAccount(uid = "u3", email = "alcaldia.control@smtp.lapaz.bo", fullName = "Ing. Laura Quispe", role = UserRole.ALCALDIA),
-            UserAccount(uid = "u4", email = "admin.master@smtp.lapaz.bo", fullName = "Admin Israel Pérez", role = UserRole.ADMINISTRADOR)
-        )
-    )
-    override val usersFlow: StateFlow<List<UserAccount>> = _usersFlow.asStateFlow()
+    private val usersRef = db.collection("users")
+    private val logsRef = db.collection("logs")
 
-    // Eventos de ejemplo (modo demostración) hasta conectar Firebase / Crashlytics
-    private val _logsFlow = MutableStateFlow(
-        listOf(
-            SystemLog("log_3", startedAt - 60_000L, LogLevel.ERROR, "SYNC", "Timeout al sincronizar incidentes (simulado)"),
-            SystemLog("log_2", startedAt - 180_000L, LogLevel.WARN, "GPS", "Unidad 3091-XYZ sin señal por 120 s (simulado)"),
-            SystemLog("log_1", startedAt - 300_000L, LogLevel.INFO, "SISTEMA", "Aplicación iniciada en modo demostración")
-        )
-    )
-    override val logsFlow: StateFlow<List<SystemLog>> = _logsFlow.asStateFlow()
+    // Solo un administrador puede listar todas las cuentas y los logs
+    override val usersFlow: StateFlow<List<UserAccount>> =
+        auth.currentUserFlow.listenTo(
+            scope,
+            queryFor = { user -> if (user.role == UserRole.ADMINISTRADOR) usersRef else null }
+        ) { it.toUserAccount() }
 
-    override suspend fun createUser(user: UserAccount): Result<Unit> {
-        val now = System.currentTimeMillis()
-        _usersFlow.update { it + user.copy(uid = "u_$now", createdAt = now) }
-        return Result.success(Unit)
+    override val logsFlow: StateFlow<List<SystemLog>> =
+        auth.currentUserFlow.listenTo(
+            scope,
+            queryFor = { user ->
+                if (user.role == UserRole.ADMINISTRADOR) {
+                    logsRef.orderBy("timestamp", Query.Direction.DESCENDING).limit(MAX_LOGS)
+                } else null
+            }
+        ) { it.toSystemLog() }
+
+    override suspend fun updateUserRole(uid: String, role: UserRole): Result<Unit> = resultOf {
+        usersRef.document(uid).update("role", role.id).await()
+        Unit
     }
 
-    override suspend fun updateUserRole(uid: String, role: UserRole): Result<Unit> {
-        _usersFlow.update { list -> list.map { if (it.uid == uid) it.copy(role = role) else it } }
-        return Result.success(Unit)
-    }
-
-    override suspend fun updateUserStatus(uid: String, status: AccountStatus): Result<Unit> {
-        _usersFlow.update { list -> list.map { if (it.uid == uid) it.copy(status = status) else it } }
-        return Result.success(Unit)
+    override suspend fun updateUserStatus(uid: String, status: AccountStatus): Result<Unit> = resultOf {
+        usersRef.document(uid).update("status", status.name).await()
+        Unit
     }
 
     override suspend fun appendLog(level: LogLevel, source: String, message: String) {
-        val log = SystemLog(
-            id = UUID.randomUUID().toString(),
-            timestamp = System.currentTimeMillis(),
-            level = level,
-            source = source,
-            message = message
-        )
-        _logsFlow.update { (listOf(log) + it).take(MAX_LOGS) }
+        try {
+            val log = SystemLog(
+                timestamp = System.currentTimeMillis(),
+                level = level,
+                source = source,
+                message = message
+            )
+            logsRef.add(log.toMap()).await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // La auditoría nunca debe romper la acción que se está registrando
+        }
     }
 }

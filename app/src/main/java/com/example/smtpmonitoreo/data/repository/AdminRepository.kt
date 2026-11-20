@@ -11,7 +11,6 @@ interface AdminRepository {
     val usersFlow: StateFlow<List<UserAccount>>
     val logsFlow: StateFlow<List<SystemLog>>
 
-    suspend fun createUser(user: UserAccount): Result<Unit>
     suspend fun updateUserRole(uid: String, role: UserRole): Result<Unit>
     suspend fun updateUserStatus(uid: String, status: AccountStatus): Result<Unit>
     suspend fun appendLog(level: LogLevel, source: String, message: String)

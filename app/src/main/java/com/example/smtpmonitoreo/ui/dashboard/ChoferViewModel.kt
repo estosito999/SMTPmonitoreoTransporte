@@ -90,7 +90,7 @@ class ChoferViewModel(
                 if (stopping) {
                     monitoring.stopGpsTransmission(unit.plate)
                 } else {
-                    monitoring.startGpsTransmission(unit.plate, unit.lineNumber)
+                    monitoring.startGpsTransmission(unit.plate)
                 }
             } catch (e: CancellationException) {
                 throw e

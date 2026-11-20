@@ -31,6 +31,7 @@ import com.example.smtpmonitoreo.ui.components.ListCard
 import com.example.smtpmonitoreo.ui.components.SectionLabel
 import com.example.smtpmonitoreo.ui.components.StatusPill
 import com.example.smtpmonitoreo.ui.theme.*
+import com.example.smtpmonitoreo.ui.components.ActionButton
 
 // ------------------------------------------------------------------
 // TAB 2: MONITOREO TÉCNICO Y LOGS
@@ -39,7 +40,8 @@ import com.example.smtpmonitoreo.ui.theme.*
 internal fun SistemaTab(
     state: AdminUiState,
     onLogFilterSelected: (LogLevel?) -> Unit,
-    onSwitchRolePreview: (UserRole) -> Unit
+    onSwitchRolePreview: (UserRole) -> Unit,
+    onSeedDemoData: () -> Unit
 ) {
     val health = state.health
 
@@ -85,7 +87,6 @@ internal fun SistemaTab(
     SectionLabel("CUENTAS POR ROL", RoleAdminColor)
     Spacer(modifier = Modifier.height(8.dp))
     FormCard { CountBars(items = health.usersByRole, color = RoleAdminColor) }
-
     Spacer(modifier = Modifier.height(20.dp))
 
     SectionLabel("REGISTRO DE EVENTOS (LOGS)", CyberCyan)
@@ -126,11 +127,10 @@ internal fun SistemaTab(
     }
 
     state.visibleLogs.forEach { log -> LogRow(log) }
-
     Spacer(modifier = Modifier.height(6.dp))
     Text(
-        text = "Las acciones de administración se registran al instante. Los demás eventos son de " +
-                "ejemplo hasta conectar Firebase y Crashlytics.",
+        text = "Cada cambio de rol o suspensión que hace un administrador se guarda como evento " +
+                "de auditoría en Firestore (colección logs).",
         fontSize = 10.sp,
         color = TextMuted
     )
@@ -139,6 +139,14 @@ internal fun SistemaTab(
     if (BuildConfig.DEMO_MODE) {
         Spacer(modifier = Modifier.height(24.dp))
         SectionLabel("HERRAMIENTAS DE DEPURACIÓN (SOLO DEBUG)")
+        Spacer(modifier = Modifier.height(10.dp))
+
+        ActionButton(
+            text = "CARGAR DATOS DE EJEMPLO EN FIRESTORE",
+            color = RoleAdminColor,
+            contentColor = DarkBackground,
+            onClick = onSeedDemoData
+        )
         Spacer(modifier = Modifier.height(10.dp))
 
         Row(

@@ -257,7 +257,7 @@ fun AuthScreen(viewModel: AuthViewModel) {
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "⚡ MODO DEMO (SOLO DEBUG) · SESIÓN LOCAL SIN FIREBASE",
+                    text = "⚡ MODO DEMO (SOLO DEBUG) · TOCA UN ROL PARA RELLENAR EL CORREO",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextSecondary,
@@ -275,7 +275,7 @@ fun AuthScreen(viewModel: AuthViewModel) {
                             role = role,
                             icon = roleIcon(role),
                             modifier = Modifier.weight(1f),
-                            onClick = { viewModel.quickLoginAs(role) }
+                            onClick = { viewModel.prefillDemoAccount(role)  }
                         )
                     }
                 }
