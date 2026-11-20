@@ -7,6 +7,7 @@ import com.example.smtpmonitoreo.data.repository.MonitoringRepositoryImpl
 import com.example.smtpmonitoreo.ui.auth.AuthViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import com.example.smtpmonitoreo.ui.dashboard.PasajeroViewModel
 
 val dataModule = module {
     single<AuthRepository> { AuthRepositoryImpl() }
@@ -15,7 +16,8 @@ val dataModule = module {
 
 val viewModelModule = module {
     viewModelOf(::AuthViewModel)
-    // 2B..2E: aquí se registran Pasajero, Chofer, Alcaldía y Admin
+    viewModelOf(::PasajeroViewModel)
+    // 2C..2E: Chofer, Alcaldía y Admin
 }
 
 val appModules = listOf(dataModule, viewModelModule)

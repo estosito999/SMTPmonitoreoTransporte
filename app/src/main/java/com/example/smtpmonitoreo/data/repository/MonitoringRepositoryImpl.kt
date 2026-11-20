@@ -16,6 +16,7 @@ import kotlin.math.*
 import kotlinx.coroutines.SupervisorJob
 import com.example.smtpmonitoreo.data.model.IncidentStatus
 import com.example.smtpmonitoreo.data.model.InfractionStatus
+import com.example.smtpmonitoreo.data.model.IncidentCategory
 
 class MonitoringRepositoryImpl : MonitoringRepository {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -115,7 +116,7 @@ class MonitoringRepositoryImpl : MonitoringRepository {
             userEmail = "pasajero.demo@smtp.lapaz.bo",
             vehiclePlate = "4521-FGH",
             lineNumber = "102",
-            category = "Cobro irregular",
+            category = IncidentCategory.COBRO_IRREGULAR,
             description = "Cobro de tarifa nocturna a las 17:30 en Pérez Velasco.",
             status = IncidentStatus.RECIBIDO,
             timestamp = System.currentTimeMillis() - 3600000
@@ -125,7 +126,7 @@ class MonitoringRepositoryImpl : MonitoringRepository {
             userEmail = "usuario.lapaz@gmail.com",
             vehiclePlate = "2184-KLM",
             lineNumber = "231",
-            category = "Desvío de ruta",
+            category = IncidentCategory.DESVIO_RUTA,
             description = "El minibús no llegó a Miraflores y cortó ruta en la Plaza Uyuni.",
             status = IncidentStatus.EN_REVISION,
             timestamp = System.currentTimeMillis() - 7200000

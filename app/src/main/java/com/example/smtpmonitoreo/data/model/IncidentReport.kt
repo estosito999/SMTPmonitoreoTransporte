@@ -5,7 +5,7 @@ data class IncidentReport(
     val userEmail: String = "",
     val vehiclePlate: String = "",
     val lineNumber: String = "",
-    val category: String = "Cobro irregular",
+    val category: IncidentCategory = IncidentCategory.COBRO_IRREGULAR,
     val description: String = "",
     val status: IncidentStatus = IncidentStatus.RECIBIDO,
     val timestamp: Long = System.currentTimeMillis(),
