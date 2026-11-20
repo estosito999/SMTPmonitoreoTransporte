@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,35 +22,28 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.smtpmonitoreo.BuildConfig
 import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen(
-    viewModel: AuthViewModel,
-    onAuthSuccess: (UserRole) -> Unit
-) {
-    val uiState by viewModel.uiState.collectAsState()
+fun AuthScreen(viewModel: AuthViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var passwordVisible by remember { mutableStateOf(false) }
-
-    LaunchedEffect(uiState.loggedInUser) {
-        uiState.loggedInUser?.let { user ->
-            onAuthSuccess(user.role)
-        }
-    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
     ) {
-        // Futuristic background glowing gradient circles
+        // Fondo con círculos de luz
         Box(
             modifier = Modifier
                 .size(300.dp)
@@ -82,16 +75,11 @@ fun AuthScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Header - Resplandor & Logo
             Box(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(CyberCyan, CyberViolet)
-                        )
-                    )
+                    .background(Brush.linearGradient(listOf(CyberCyan, CyberViolet)))
                     .padding(3.dp)
             ) {
                 Box(
@@ -128,7 +116,6 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Container futurista con borde de neón
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -141,7 +128,6 @@ fun AuthScreen(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Selector Tab: Iniciar Sesión vs Registro
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -165,31 +151,11 @@ fun AuthScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Selector de Roles Futurista
-                    Text(
-                        text = "SELECCIONA TU ROL DE ACCESO",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = CyberCyan,
-                        letterSpacing = 1.2.sp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    RoleGrid(
-                        selectedRole = uiState.selectedRole,
-                        onRoleSelected = { viewModel.onRoleSelected(it) }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Campos Formulario
                     AnimatedVisibility(visible = uiState.isRegisterMode) {
                         Column {
                             FuturisticTextField(
                                 value = uiState.fullName,
-                                onValueChange = { viewModel.onFullNameChanged(it) },
+                                onValueChange = viewModel::onFullNameChanged,
                                 label = "Nombre Completo",
                                 leadingIcon = Icons.Default.Person
                             )
@@ -199,24 +165,35 @@ fun AuthScreen(
 
                     FuturisticTextField(
                         value = uiState.email,
-                        onValueChange = { viewModel.onEmailChanged(it) },
+                        onValueChange = viewModel::onEmailChanged,
                         label = "Correo Electrónico",
-                        leadingIcon = Icons.Default.Email
+                        leadingIcon = Icons.Default.Email,
+                        keyboardType = KeyboardType.Email
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     FuturisticTextField(
                         value = uiState.password,
-                        onValueChange = { viewModel.onPasswordChanged(it) },
+                        onValueChange = viewModel::onPasswordChanged,
                         label = "Contraseña",
                         leadingIcon = Icons.Default.Lock,
+                        keyboardType = KeyboardType.Password,
                         isPassword = true,
                         passwordVisible = passwordVisible,
                         onPasswordToggle = { passwordVisible = !passwordVisible }
                     )
 
-                    // Error Banner
+                    if (uiState.isRegisterMode) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Tu cuenta se crea como Pasajero. Las cuentas de Chofer, Alcaldía y " +
+                                    "Administrador las asigna un administrador.",
+                            fontSize = 11.sp,
+                            color = TextSecondary
+                        )
+                    }
+
                     uiState.errorMessage?.let { err ->
                         Spacer(modifier = Modifier.height(14.dp))
                         Box(
@@ -239,27 +216,20 @@ fun AuthScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Botón Principal Resplandeciente
                     Button(
-                        onClick = { viewModel.submit() },
+                        onClick = viewModel::submit,
                         enabled = !uiState.isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Unspecified
-                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Unspecified),
                         contentPadding = PaddingValues()
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        listOf(uiState.selectedRole.accentColor, CyberViolet)
-                                    )
-                                ),
+                                .background(Brush.horizontalGradient(listOf(CyberCyan, CyberViolet))),
                             contentAlignment = Alignment.Center
                         ) {
                             if (uiState.isLoading) {
@@ -282,49 +252,43 @@ fun AuthScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            // Acceso rápido: SOLO en builds de debug
+            if (BuildConfig.DEMO_MODE) {
+                Spacer(modifier = Modifier.height(28.dp))
 
-            // Acceso Rápido / Demo Toolbar para Pruebas Instantáneas del Sprint 1
-            Text(
-                text = "⚡ MODO PRUEBA RÁPIDA DE ROLES (DEMO)",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextSecondary,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "⚡ MODO DEMO (SOLO DEBUG) · SESIÓN LOCAL SIN FIREBASE",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextSecondary,
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                QuickRoleButton(
-                    role = UserRole.PASAJERO,
-                    icon = Icons.Default.DirectionsBus,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.quickLoginAs(UserRole.PASAJERO) }
-                )
-                QuickRoleButton(
-                    role = UserRole.CHOFER,
-                    icon = Icons.Default.LocalShipping,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.quickLoginAs(UserRole.CHOFER) }
-                )
-                QuickRoleButton(
-                    role = UserRole.ALCALDIA,
-                    icon = Icons.Default.Shield,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.quickLoginAs(UserRole.ALCALDIA) }
-                )
-                QuickRoleButton(
-                    role = UserRole.ADMINISTRADOR,
-                    icon = Icons.Default.AdminPanelSettings,
-                    modifier = Modifier.weight(1f),
-                    onClick = { viewModel.quickLoginAs(UserRole.ADMINISTRADOR) }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    UserRole.entries.forEach { role ->
+                        QuickRoleButton(
+                            role = role,
+                            icon = roleIcon(role),
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.quickLoginAs(role) }
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+private fun roleIcon(role: UserRole): ImageVector = when (role) {
+    UserRole.PASAJERO -> Icons.Default.PersonPin
+    UserRole.CHOFER -> Icons.Default.DirectionsBus
+    UserRole.ALCALDIA -> Icons.Default.Shield
+    UserRole.ADMINISTRADOR -> Icons.Default.AdminPanelSettings
 }
 
 @Composable
@@ -357,109 +321,12 @@ private fun TabButton(
 }
 
 @Composable
-private fun RoleGrid(
-    selectedRole: UserRole,
-    onRoleSelected: (UserRole) -> Unit
-) {
-    val roles = UserRole.entries
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            RoleCard(
-                role = roles[0], // PASAJERO
-                icon = Icons.Default.PersonPin,
-                isSelected = selectedRole == roles[0],
-                modifier = Modifier.weight(1f),
-                onClick = { onRoleSelected(roles[0]) }
-            )
-            RoleCard(
-                role = roles[1], // CHOFER
-                icon = Icons.Default.DirectionsBus,
-                isSelected = selectedRole == roles[1],
-                modifier = Modifier.weight(1f),
-                onClick = { onRoleSelected(roles[1]) }
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            RoleCard(
-                role = roles[2], // ALCALDIA
-                icon = Icons.Default.Shield,
-                isSelected = selectedRole == roles[2],
-                modifier = Modifier.weight(1f),
-                onClick = { onRoleSelected(roles[2]) }
-            )
-            RoleCard(
-                role = roles[3], // ADMINISTRADOR
-                icon = Icons.Default.AdminPanelSettings,
-                isSelected = selectedRole == roles[3],
-                modifier = Modifier.weight(1f),
-                onClick = { onRoleSelected(roles[3]) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun RoleCard(
-    role: UserRole,
-    icon: ImageVector,
-    isSelected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (isSelected) DarkSurfaceElevated else DarkSurfaceVariant)
-            .border(
-                width = if (isSelected) 1.5.dp else 1.dp,
-                color = if (isSelected) role.accentColor else CyberBorder,
-                shape = RoundedCornerShape(14.dp)
-            )
-            .clickable { onClick() }
-            .padding(12.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = role.displayName,
-                tint = if (isSelected) role.accentColor else TextSecondary,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = role.displayName,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isSelected) TextPrimary else TextSecondary
-                )
-                Text(
-                    text = role.subtitle,
-                    fontSize = 10.sp,
-                    color = TextMuted,
-                    maxLines = 1
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 private fun FuturisticTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     leadingIcon: ImageVector,
+    keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false,
     passwordVisible: Boolean = false,
     onPasswordToggle: () -> Unit = {}
@@ -481,7 +348,7 @@ private fun FuturisticTextField(
                 IconButton(onClick = onPasswordToggle) {
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = "Toggle password",
+                        contentDescription = "Mostrar u ocultar contraseña",
                         tint = TextSecondary,
                         modifier = Modifier.size(20.dp)
                     )
@@ -489,6 +356,7 @@ private fun FuturisticTextField(
             }
         } else null,
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -533,9 +401,10 @@ private fun QuickRoleButton(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = role.displayName,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = TextPrimary,
+                maxLines = 1
             )
         }
     }
