@@ -145,6 +145,7 @@ fun ChoferDashboard(
                 units = state.units,
                 routes = state.routes,
                 selectedUnit = state.currentUnit,
+                followSelected = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)

@@ -38,6 +38,8 @@ object RouteRegistration {
             return Validation.Error("Tarifa inválida (entre 0.01 y 50 Bs).")
         }
 
+        val stops = parseStops(draft.stops)
+
         return Validation.Ok(
             RouteModel(
                 lineNumber = line,
@@ -45,7 +47,9 @@ object RouteRegistration {
                 origin = origin,
                 destination = destination,
                 tariffBs = tariff,
-                stops = parseStops(draft.stops)
+                stops = stops,
+                // Trazado: solo los puntos que se reconocen como lugares conocidos de La Paz
+                waypoints = LaPazPlaces.waypointsFor(origin, stops, destination)
             )
         )
     }

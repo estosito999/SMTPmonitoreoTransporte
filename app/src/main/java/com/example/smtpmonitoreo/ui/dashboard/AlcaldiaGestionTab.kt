@@ -1,3 +1,4 @@
+
 package com.example.smtpmonitoreo.ui.dashboard
 
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import com.example.smtpmonitoreo.ui.components.ListCard
 import com.example.smtpmonitoreo.ui.components.SectionLabel
 import com.example.smtpmonitoreo.ui.components.StatusPill
 import com.example.smtpmonitoreo.ui.theme.*
+import com.example.smtpmonitoreo.domain.LaPazPlaces
 
 // ------------------------------------------------------------------
 // TAB 2: GESTIÓN DE RUTAS, UNIDADES Y CHOFERES (RF-40, RF-41)
@@ -91,6 +93,12 @@ private fun RouteSection(
             onValueChange = { onChange(d.copy(stops = it)) },
             label = "Paradas intermedias (separadas por coma)"
         )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "El trazado en el mapa usa los lugares conocidos: ${LaPazPlaces.names.joinToString(", ")}.",
+            fontSize = 11.sp,
+            color = TextSecondary
+        )
         FormError(state.routeError)
         Spacer(modifier = Modifier.height(14.dp))
         ActionButton(
@@ -116,7 +124,8 @@ private fun RouteSection(
                     color = TextPrimary
                 )
                 Text(
-                    text = "${route.origin} ➔ ${route.destination} · ${route.stops.size} paradas",
+                    text = "${route.origin} ➔ ${route.destination} · ${route.stops.size} paradas" +
+                            if (route.waypoints.size < 2) " · sin trazado" else "",
                     fontSize = 11.sp,
                     color = TextSecondary
                 )

@@ -35,6 +35,9 @@ import com.example.smtpmonitoreo.ui.components.SegmentedTabItem
 import com.example.smtpmonitoreo.ui.components.SmtpMapView
 import com.example.smtpmonitoreo.ui.theme.*
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.toArgb
+import com.example.smtpmonitoreo.ui.components.MapPin
 
 @Composable
 fun PasajeroDashboard(
@@ -405,6 +408,23 @@ private fun RutasTab(
                 )
             }
         }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        val pins = remember(state.origin, state.destination) {
+            listOfNotNull(
+                LaPazPlaces.find(state.origin)?.let { MapPin("A", it.first, it.second, CyberEmerald.toArgb()) },
+                LaPazPlaces.find(state.destination)?.let { MapPin("B", it.first, it.second, CyberRose.toArgb()) }
+            )
+        }
+        SmtpMapView(
+            units = state.units,
+            routes = state.routes,
+            highlightedRouteId = result.route.id,
+            pins = pins,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+        )
     }
 }
 

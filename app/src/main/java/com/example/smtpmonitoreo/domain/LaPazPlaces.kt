@@ -13,5 +13,10 @@ object LaPazPlaces {
 
     val names: List<String> = coordinates.keys.toList()
 
-    fun find(name: String): Pair<Double, Double>? = coordinates[name]
+    fun find(name: String): Pair<Double, Double>? =
+        coordinates.entries.firstOrNull { it.key.equals(name.trim(), ignoreCase = true) }?.value
+
+    /** Puntos de una ruta (origen, paradas y destino) que se reconocen como lugares conocidos. */
+    fun waypointsFor(origin: String, stops: List<String>, destination: String): List<Pair<Double, Double>> =
+        (listOf(origin) + stops + destination).mapNotNull { find(it) }
 }

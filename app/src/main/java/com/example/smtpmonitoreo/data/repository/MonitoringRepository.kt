@@ -22,5 +22,4 @@ interface MonitoringRepository {
     suspend fun updateInfractionStatus(infractionId: String, newStatus: InfractionStatus): Result<Unit>
     suspend fun addRoute(route: RouteModel): Result<Unit>
     suspend fun addUnit(unit: TransportUnit): Result<Unit>
-    fun calculateEtaMinutes(unitLat: Double, unitLng: Double, targetLat: Double, targetLng: Double, speedKmh: Float): Int
 }

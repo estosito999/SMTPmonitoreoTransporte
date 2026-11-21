@@ -8,10 +8,12 @@ import com.example.smtpmonitoreo.data.model.RouteModel
 import com.example.smtpmonitoreo.data.model.TransportUnit
 import com.example.smtpmonitoreo.data.repository.AuthRepository
 import com.example.smtpmonitoreo.data.repository.MonitoringRepository
+import com.example.smtpmonitoreo.domain.EtaCalculator
 import com.example.smtpmonitoreo.domain.LaPazPlaces
 import com.example.smtpmonitoreo.domain.PlateValidator
 import com.example.smtpmonitoreo.domain.RouteSearch
 import com.example.smtpmonitoreo.domain.RouteSearchResult
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 enum class PasajeroTab { MAPA, RUTAS, REPORTAR }
 
@@ -53,11 +56,15 @@ data class PasajeroUiState(
 
 class PasajeroViewModel(
     private val monitoring: MonitoringRepository,
-    private val auth: AuthRepository
+    private val auth: AuthRepository,
+    private val eta: EtaCalculator
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PasajeroUiState())
     val uiState: StateFlow<PasajeroUiState> = _state.asStateFlow()
+
+    private var etaJob: Job? = null
+    private var lastEtaKey: String? = null
 
     init {
         combine(
@@ -69,7 +76,8 @@ class PasajeroViewModel(
             val mine = incidents.filter { user != null && it.userEmail.equals(user.email, ignoreCase = true) }
             Triple(units, routes, mine)
         }.onEach { (units, routes, mine) ->
-            _state.update { it.copy(units = units, routes = routes, myIncidents = mine).withEta() }
+            _state.update { it.copy(units = units, routes = routes, myIncidents = mine) }
+            refreshEta()
         }.launchIn(viewModelScope)
     }
 
@@ -78,13 +86,17 @@ class PasajeroViewModel(
     fun onTabSelected(tab: PasajeroTab) =
         _state.update { it.copy(tab = tab, reportSent = false) }
 
-    fun onUnitSelected(unit: TransportUnit) =
-        _state.update { it.copy(selectedUnitId = unit.id).withEta() }
+    fun onUnitSelected(unit: TransportUnit) {
+        _state.update { it.copy(selectedUnitId = unit.id) }
+        refreshEta()
+    }
 
     // ---------- Buscador de rutas ----------
 
-    fun onOriginSelected(name: String) =
-        _state.update { it.copy(origin = name, searchResult = null, searchMessage = null).withEta() }
+    fun onOriginSelected(name: String) {
+        _state.update { it.copy(origin = name, searchResult = null, searchMessage = null) }
+        refreshEta()
+    }
 
     fun onDestinationSelected(name: String) =
         _state.update { it.copy(destination = name, searchResult = null, searchMessage = null) }
@@ -167,21 +179,35 @@ class PasajeroViewModel(
         }
     }
 
-    // ---------- Derivados ----------
+    // ---------- ETA (RF-14) ----------
 
-    /** ETA de la unidad seleccionada hacia el punto de origen elegido (tu parada). */
-    private fun PasajeroUiState.withEta(): PasajeroUiState {
-        val unit = selectedUnit
-        val target = LaPazPlaces.find(origin)
-        val eta = if (unit != null && target != null) {
-            monitoring.calculateEtaMinutes(
-                unitLat = unit.latitude,
-                unitLng = unit.longitude,
-                targetLat = target.first,
-                targetLng = target.second,
-                speedKmh = unit.speedKmh
-            )
-        } else null
-        return copy(etaMinutes = eta)
+    /**
+     * ETA de la unidad seleccionada hacia tu parada (el origen elegido), por calles.
+     * Solo se recalcula si cambió la unidad, la parada o la posición (~100 m).
+     */
+    private fun refreshEta() {
+        val s = _state.value
+        val unit = s.selectedUnit
+        val target = LaPazPlaces.find(s.origin)
+
+        if (unit == null || target == null) {
+            etaJob?.cancel()
+            lastEtaKey = null
+            _state.update { it.copy(etaMinutes = null) }
+            return
+        }
+
+        val key = String.format(
+            Locale.US, "%s|%.3f|%.3f|%s|%d",
+            unit.id, unit.latitude, unit.longitude, s.origin, (unit.speedKmh / 5).toInt()
+        )
+        if (key == lastEtaKey) return
+        lastEtaKey = key
+
+        etaJob?.cancel()
+        etaJob = viewModelScope.launch {
+            val minutes = eta.minutes(unit.latitude to unit.longitude, target, unit.speedKmh)
+            _state.update { it.copy(etaMinutes = minutes) }
+        }
     }
 }

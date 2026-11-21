@@ -163,24 +163,5 @@ class MonitoringRepositoryImpl(
         Unit
     }
 
-    // ---------- ETA (RF-14) ----------
 
-    override fun calculateEtaMinutes(
-        unitLat: Double,
-        unitLng: Double,
-        targetLat: Double,
-        targetLng: Double,
-        speedKmh: Float
-    ): Int {
-        val dLat = Math.toRadians(targetLat - unitLat)
-        val dLng = Math.toRadians(targetLng - unitLng)
-        val a = sin(dLat / 2).pow(2.0) +
-                cos(Math.toRadians(unitLat)) * cos(Math.toRadians(targetLat)) * sin(dLng / 2).pow(2.0)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        val distanceKm = 6371.0 * c
-
-        val effectiveSpeed = if (speedKmh > 5f) speedKmh else 25f
-        val minutes = (distanceKm / effectiveSpeed * 60).roundToInt()
-        return max(1, minutes)
-    }
 }

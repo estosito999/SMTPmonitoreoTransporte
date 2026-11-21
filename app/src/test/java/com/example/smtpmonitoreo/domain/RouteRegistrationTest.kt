@@ -54,4 +54,18 @@ class RouteRegistrationTest {
         assertTrue(RouteRegistration.validate(valid.copy(name = ""), existing) is Validation.Error)
         assertTrue(RouteRegistration.validate(valid.copy(origin = ""), existing) is Validation.Error)
     }
+    @Test
+    fun genera_el_trazado_solo_con_los_lugares_conocidos_de_la_paz() {
+        val draft = valid.copy(
+            origin = "Ceja El Alto",
+            destination = "Calacoto",
+            stops = "pérez velasco, San Pedro, Lugar Inventado"
+        )
+
+        val route = (RouteRegistration.validate(draft, existing) as Validation.Ok).value
+
+        assertEquals(4, route.waypoints.size)
+        assertEquals(LaPazPlaces.find("Ceja El Alto"), route.waypoints.first())
+        assertEquals(LaPazPlaces.find("Calacoto"), route.waypoints.last())
+    }
 }
