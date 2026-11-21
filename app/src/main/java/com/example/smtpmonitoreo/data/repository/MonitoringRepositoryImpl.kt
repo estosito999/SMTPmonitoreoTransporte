@@ -6,25 +6,19 @@ import com.example.smtpmonitoreo.data.model.InfractionModel
 import com.example.smtpmonitoreo.data.model.InfractionStatus
 import com.example.smtpmonitoreo.data.model.RouteModel
 import com.example.smtpmonitoreo.data.model.TransportUnit
+import com.example.smtpmonitoreo.domain.UnitLiveness
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.tasks.await
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.sin
-import kotlin.math.sqrt
-import com.example.smtpmonitoreo.domain.UnitLiveness
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 
 class MonitoringRepositoryImpl(
     db: FirebaseFirestore,
@@ -87,7 +81,7 @@ class MonitoringRepositoryImpl(
                     "lastUpdated" to System.currentTimeMillis()
                 )
             )
-            .await()
+            .awaitOrQueue()
     }
 
     override suspend fun updateVehicleLocation(
@@ -107,18 +101,17 @@ class MonitoringRepositoryImpl(
                     "lastUpdated" to System.currentTimeMillis()
                 )
             )
-            .await()
+            .awaitOrQueue()
     }
 
     // ---------- Incidentes (RF-18, RF-43) ----------
 
-    override suspend fun submitIncident(report: IncidentReport): Result<Unit> = resultOf {
+    override suspend fun submitIncident(report: IncidentReport): Result<WriteStatus> = resultOf {
         val newReport = report.copy(
             status = IncidentStatus.RECIBIDO,
             timestamp = System.currentTimeMillis()
         )
-        incidentsRef.add(newReport.toMap()).await()
-        Unit
+        incidentsRef.add(newReport.toMap()).awaitOrQueue()
     }
 
     override suspend fun updateIncidentStatus(
@@ -128,14 +121,14 @@ class MonitoringRepositoryImpl(
     ): Result<Unit> = resultOf {
         incidentsRef.document(reportId)
             .update(mapOf("status" to newStatus.name, "resolutionNote" to note))
-            .await()
+            .awaitOrQueue()
         Unit
     }
 
     // ---------- Infracciones (RF-44) ----------
 
     override suspend fun addInfraction(infraction: InfractionModel): Result<Unit> = resultOf {
-        infractionsRef.add(infraction.toMap()).await()
+        infractionsRef.add(infraction.toMap()).awaitOrQueue()
         Unit
     }
 
@@ -143,25 +136,29 @@ class MonitoringRepositoryImpl(
         infractionId: String,
         newStatus: InfractionStatus
     ): Result<Unit> = resultOf {
-        infractionsRef.document(infractionId).update("status", newStatus.name).await()
+        infractionsRef.document(infractionId).update("status", newStatus.name).awaitOrQueue()
         Unit
     }
 
     // ---------- Rutas y unidades (RF-40, RF-41) ----------
 
     override suspend fun addRoute(route: RouteModel): Result<Unit> = resultOf {
-        routesRef.add(route.toMap()).await()
+        routesRef.add(route.toMap()).awaitOrQueue()
         Unit
     }
 
     override suspend fun addUnit(unit: TransportUnit): Result<Unit> = resultOf {
         val ref = unitsRef.document(unit.plate) // la placa es el ID: es única por diseño
-        if (ref.get().await().exists()) {
+        // Sin conexión no se puede consultar al servidor: se confía en la validación local
+        val existing = withTimeoutOrNull(EXISTS_CHECK_TIMEOUT_MS) { ref.get().await() }
+        if (existing?.exists() == true) {
             throw IllegalStateException("La placa ${unit.plate} ya está registrada.")
         }
-        ref.set(unit.toMap()).await()
+        ref.set(unit.toMap()).awaitOrQueue()
         Unit
     }
 
-
+    private companion object {
+        const val EXISTS_CHECK_TIMEOUT_MS = 4_000L
+    }
 }

@@ -30,7 +30,7 @@ import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.domain.LaPazPlaces
 import com.example.smtpmonitoreo.ui.components.DashboardTopBar
 import com.example.smtpmonitoreo.ui.components.DropdownSelector
-import com.example.smtpmonitoreo.ui.components.NetworkStatusBanner
+import com.example.smtpmonitoreo.ui.components.ConnectionBanner
 import com.example.smtpmonitoreo.ui.components.SegmentedTabItem
 import com.example.smtpmonitoreo.ui.components.SmtpMapView
 import com.example.smtpmonitoreo.ui.theme.*
@@ -59,7 +59,7 @@ fun PasajeroDashboard(
         )
 
         // Banner de Conectividad (RNF-18) — se hace real en el bloque de conectividad
-        NetworkStatusBanner(isConnected = true, isReconnecting = false)
+        ConnectionBanner()
 
         Row(
             modifier = Modifier
@@ -534,9 +534,13 @@ private fun ReportarTab(
             if (state.reportSent) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "¡Reporte enviado exitosamente a la Alcaldía!",
+                    text = if (state.reportQueued) {
+                        "Sin conexión: tu reporte se enviará automáticamente al recuperar la señal."
+                    } else {
+                        "¡Reporte enviado exitosamente a la Alcaldía!"
+                    },
                     fontSize = 12.sp,
-                    color = CyberEmerald,
+                    color = if (state.reportQueued) CyberAmber else CyberEmerald,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()

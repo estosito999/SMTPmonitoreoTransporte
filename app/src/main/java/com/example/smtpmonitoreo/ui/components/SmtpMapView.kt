@@ -52,6 +52,7 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.util.MapTileIndex
 import com.example.smtpmonitoreo.BuildConfig
+import androidx.compose.ui.text.style.TextAlign
 
 /** Punto fijo con etiqueta (por ejemplo A = origen, B = destino). */
 data class MapPin(
@@ -112,6 +113,7 @@ fun SmtpMapView(
         }
     }
 
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
@@ -160,7 +162,27 @@ fun SmtpMapView(
                 )
             }
         }
+
+        if (BuildConfig.MAPTILER_KEY.isBlank()) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(24.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = DarkBackground.copy(alpha = 0.92f),
+                border = BorderStroke(1.dp, CyberAmber)
+            ) {
+                Text(
+                    text = "Falta MAPTILER_KEY en local.properties: el mapa no puede cargar las teselas.",
+                    fontSize = 12.sp,
+                    color = CyberAmber,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(14.dp)
+                )
+            }
+        }
     }
+
 }
 
 private fun createLaPazMapView(context: Context): MapView = MapView(context).apply {

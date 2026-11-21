@@ -23,6 +23,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import com.example.smtpmonitoreo.data.network.AndroidNetworkMonitor
+import com.example.smtpmonitoreo.domain.NetworkMonitor
+import com.example.smtpmonitoreo.ui.components.ConnectivityViewModel
 
 val firebaseModule = module {
     single { FirebaseAuth.getInstance() }
@@ -36,6 +39,7 @@ val dataModule = module {
     single { DemoSeeder(db = get()) }
     single<LocationTracker> { ServiceLocationTracker(androidContext()) }
     single<RoutingService> { OsrmRoutingService(androidContext()) }
+    single<NetworkMonitor> { AndroidNetworkMonitor(androidContext()) }
     single { EtaCalculator(routing = get()) }
 }
 
@@ -46,6 +50,7 @@ val viewModelModule = module {
     viewModelOf(::AlcaldiaViewModel)
     viewModelOf(::AdminViewModel)
     viewModelOf(::RoutePathsViewModel)
+    viewModelOf(::ConnectivityViewModel)
 }
 
 val appModules = listOf(firebaseModule, dataModule, viewModelModule)

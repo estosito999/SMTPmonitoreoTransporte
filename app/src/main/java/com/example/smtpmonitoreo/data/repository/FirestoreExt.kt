@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** Escucha una consulta de Firestore en tiempo real. */
 internal fun Query.snapshotFlow(): Flow<List<DocumentSnapshot>> = callbackFlow {
@@ -58,3 +61,14 @@ internal inline fun <T> resultOf(block: () -> T): Result<T> =
     } catch (e: Exception) {
         Result.failure(AuthException(AuthErrors.toUserMessage(e), e))
     }
+/**
+ * Espera la confirmación del servidor, pero sin colgarse sin conexión: Firestore guarda la escritura
+ * en disco y la envía sola al reconectar. Los errores reales (permisos, etc.) se siguen propagando.
+ */
+internal suspend fun <T> Task<T>.awaitOrQueue(timeoutMs: Long = 4_000L): WriteStatus {
+    val confirmed = withTimeoutOrNull(timeoutMs) {
+        await()
+        true
+    }
+    return if (confirmed == true) WriteStatus.SYNCED else WriteStatus.QUEUED
+}

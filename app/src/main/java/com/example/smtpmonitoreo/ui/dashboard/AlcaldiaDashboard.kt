@@ -29,7 +29,7 @@ import com.example.smtpmonitoreo.ui.components.CountBars
 import com.example.smtpmonitoreo.ui.components.DashboardTopBar
 import com.example.smtpmonitoreo.ui.components.DropdownSelector
 import com.example.smtpmonitoreo.ui.components.FormCard
-import com.example.smtpmonitoreo.ui.components.NetworkStatusBanner
+import com.example.smtpmonitoreo.ui.components.ConnectionBanner
 import com.example.smtpmonitoreo.ui.components.NoticeBanner
 import com.example.smtpmonitoreo.ui.components.SectionLabel
 import com.example.smtpmonitoreo.ui.components.SegmentedTabItem
@@ -66,7 +66,7 @@ fun AlcaldiaDashboard(
         )
 
         // Banner de Conectividad (RNF-18) — se hace real en el bloque de conectividad
-        NetworkStatusBanner(isConnected = true, isReconnecting = false)
+        ConnectionBanner()
 
         // Tabs de Control Municipal (desplazables: 4 no caben repartidas)
         Row(

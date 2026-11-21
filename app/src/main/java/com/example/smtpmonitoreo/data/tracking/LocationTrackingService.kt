@@ -28,10 +28,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import com.example.smtpmonitoreo.domain.NetworkMonitor
 
 class LocationTrackingService : Service() {
 
     private val monitoring: MonitoringRepository by inject()
+    private val network: NetworkMonitor by inject()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val fused by lazy { LocationServices.getFusedLocationProviderClient(this) }
 
@@ -112,6 +114,8 @@ class LocationTrackingService : Service() {
     }
 
     private fun publish(plate: String, location: Location) {
+        // Sin conexión no se acumulan posiciones viejas: se retoma solo al volver la señal
+        if (!network.isOnlineNow()) return
         val speedKmh = if (location.hasSpeed()) location.speed * 3.6f else 0f
         val heading = if (location.hasBearing()) location.bearing else 0f
         serviceScope.launch {

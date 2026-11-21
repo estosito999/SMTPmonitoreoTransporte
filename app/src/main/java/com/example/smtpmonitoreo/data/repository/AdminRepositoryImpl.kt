@@ -12,7 +12,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.tasks.await
 import com.google.firebase.firestore.FieldValue
 
 private const val MAX_LOGS = 100L
@@ -45,16 +44,16 @@ class AdminRepositoryImpl(
         ) { it.toSystemLog() }
 
     override suspend fun updateUserRole(uid: String, role: UserRole): Result<Unit> = resultOf {
-        usersRef.document(uid).update("role", role.id).await()
+        usersRef.document(uid).update("role", role.id).awaitOrQueue()
         Unit
     }
 
     override suspend fun updateUserStatus(uid: String, status: AccountStatus): Result<Unit> = resultOf {
-        usersRef.document(uid).update("status", status.name).await()
+        usersRef.document(uid).update("status", status.name).awaitOrQueue()
         Unit
     }
     override suspend fun assignVehicle(uid: String, plate: String?): Result<Unit> = resultOf {
-        usersRef.document(uid).update("assignedVehicleId", plate ?: FieldValue.delete()).await()
+        usersRef.document(uid).update("assignedVehicleId", plate ?: FieldValue.delete()).awaitOrQueue()
         Unit
     }
 
@@ -66,7 +65,7 @@ class AdminRepositoryImpl(
                 source = source,
                 message = message
             )
-            logsRef.add(log.toMap()).await()
+            logsRef.add(log.toMap()).awaitOrQueue()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

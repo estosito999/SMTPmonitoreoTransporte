@@ -32,7 +32,7 @@ import com.example.smtpmonitoreo.ui.components.AppTextField
 import com.example.smtpmonitoreo.ui.components.DashboardTopBar
 import com.example.smtpmonitoreo.ui.components.FormCard
 import com.example.smtpmonitoreo.ui.components.FormError
-import com.example.smtpmonitoreo.ui.components.NetworkStatusBanner
+import com.example.smtpmonitoreo.ui.components.ConnectionBanner
 import com.example.smtpmonitoreo.ui.components.NoticeBanner
 import com.example.smtpmonitoreo.ui.components.SectionLabel
 import com.example.smtpmonitoreo.ui.components.SegmentedTabItem
@@ -64,7 +64,7 @@ fun AdminDashboard(
         )
 
         // Banner de Conectividad (RNF-18) — se hace real en el bloque de conectividad
-        NetworkStatusBanner(isConnected = true, isReconnecting = false)
+        ConnectionBanner()
 
         Row(
             modifier = Modifier

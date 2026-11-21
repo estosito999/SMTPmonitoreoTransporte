@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
+import com.example.smtpmonitoreo.data.repository.WriteStatus
 
 enum class PasajeroTab { MAPA, RUTAS, REPORTAR }
 
@@ -47,6 +48,7 @@ data class PasajeroUiState(
     val reportDescription: String = "",
     val reportError: String? = null,
     val reportSent: Boolean = false,
+    val reportQueued: Boolean = false,
     val isSending: Boolean = false,
     val myIncidents: List<IncidentReport> = emptyList()
 ) {
@@ -167,9 +169,15 @@ class PasajeroViewModel(
                     category = s.reportCategory,
                     description = s.reportDescription.trim()
                 )
-            ).onSuccess {
+            ).onSuccess { status ->
                 _state.update {
-                    it.copy(isSending = false, reportPlate = "", reportDescription = "", reportSent = true)
+                    it.copy(
+                        isSending = false,
+                        reportPlate = "",
+                        reportDescription = "",
+                        reportSent = true,
+                        reportQueued = status == WriteStatus.QUEUED
+                    )
                 }
             }.onFailure { e ->
                 _state.update {

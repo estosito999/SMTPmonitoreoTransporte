@@ -35,7 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.ui.components.DashboardTopBar
-import com.example.smtpmonitoreo.ui.components.NetworkStatusBanner
+import com.example.smtpmonitoreo.ui.components.ConnectionBanner
 import com.example.smtpmonitoreo.ui.components.SmtpMapView
 import com.example.smtpmonitoreo.ui.theme.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -96,7 +96,7 @@ fun ChoferDashboard(
         )
 
         // Banner de Conectividad (RNF-18) — se hace real en el bloque de conectividad
-        NetworkStatusBanner(isConnected = true, isReconnecting = false)
+        ConnectionBanner()
 
         Column(
             modifier = Modifier
