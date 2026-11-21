@@ -19,6 +19,12 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import com.example.smtpmonitoreo.domain.UnitLiveness
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 
 class MonitoringRepositoryImpl(
     db: FirebaseFirestore,
@@ -34,8 +40,20 @@ class MonitoringRepositoryImpl(
 
     // ---------- Lecturas en tiempo real (solo con sesión activa) ----------
 
-    override val activeUnitsFlow: StateFlow<List<TransportUnit>> =
+    private val rawUnits: StateFlow<List<TransportUnit>> =
         auth.currentUserFlow.listenTo(scope, queryFor = { unitsRef }) { it.toTransportUnit() }
+
+    // Reloj que refresca el estado "en ruta" aunque no lleguen cambios de Firestore
+    private val clock = flow {
+        while (true) {
+            emit(System.currentTimeMillis())
+            delay(15_000L)
+        }
+    }
+
+    override val activeUnitsFlow: StateFlow<List<TransportUnit>> =
+        combine(rawUnits, clock) { units, now -> units.map { UnitLiveness.withLiveness(it, now) } }
+            .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     override val routesFlow: StateFlow<List<RouteModel>> =
         auth.currentUserFlow.listenTo(scope, queryFor = { routesRef }) { it.toRoute() }
@@ -72,13 +90,20 @@ class MonitoringRepositoryImpl(
             .await()
     }
 
-    override suspend fun updateVehicleLocation(plate: String, lat: Double, lng: Double, speed: Float) {
+    override suspend fun updateVehicleLocation(
+        plate: String,
+        lat: Double,
+        lng: Double,
+        speedKmh: Float,
+        heading: Float
+    ) {
         unitsRef.document(plate)
             .update(
                 mapOf(
                     "latitude" to lat,
                     "longitude" to lng,
-                    "speedKmh" to speed.toDouble(),
+                    "speedKmh" to speedKmh.toDouble(),
+                    "heading" to heading.toDouble(),
                     "lastUpdated" to System.currentTimeMillis()
                 )
             )

@@ -16,8 +16,7 @@ interface MonitoringRepository {
 
     suspend fun startGpsTransmission(plate: String)
     suspend fun stopGpsTransmission(plate: String)
-    suspend fun updateVehicleLocation(plate: String, lat: Double, lng: Double, speed: Float)
-    suspend fun submitIncident(report: IncidentReport): Result<Unit>
+    suspend fun updateVehicleLocation(plate: String, lat: Double, lng: Double, speedKmh: Float, heading: Float)    suspend fun submitIncident(report: IncidentReport): Result<Unit>
     suspend fun updateIncidentStatus(reportId: String, newStatus: IncidentStatus, note: String = ""): Result<Unit>
     suspend fun addInfraction(infraction: InfractionModel): Result<Unit>
     suspend fun updateInfractionStatus(infractionId: String, newStatus: InfractionStatus): Result<Unit>

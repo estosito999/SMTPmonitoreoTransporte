@@ -77,6 +77,18 @@ class AuthRepositoryImpl(
         auth.signOut()
         publish(null)
     }
+    override suspend fun refreshProfile() {
+        val fbUser = auth.currentUser ?: return // sesión de Firebase real
+        try {
+            publish(loadAndCheck(fbUser))
+        } catch (e: AccountSuspendedException) {
+            publish(null)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Sin conexión: se conserva el perfil que ya estaba cargado
+        }
+    }
 
 
 
@@ -129,6 +141,7 @@ class AuthRepositoryImpl(
             fullName = snapshot.getString("fullName") ?: fallbackName,
             role = UserRole.fromString(snapshot.getString("role")),
             phone = snapshot.getString("phone").orEmpty(),
+            assignedVehicleId = snapshot.getString("assignedVehicleId"),
             status = AccountStatus.entries.firstOrNull { it.name == snapshot.getString("status") }
                 ?: AccountStatus.ACTIVO,
             createdAt = snapshot.getLong("createdAt") ?: System.currentTimeMillis()

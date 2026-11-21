@@ -142,6 +142,7 @@ internal fun DocumentSnapshot.toUserAccount(): UserAccount = UserAccount(
     fullName = getString("fullName").orEmpty(),
     role = UserRole.fromString(getString("role")),
     phone = getString("phone").orEmpty(),
+    assignedVehicleId = getString("assignedVehicleId"),
     status = enumOf(getString("status"), AccountStatus.ACTIVO),
     createdAt = getLong("createdAt") ?: 0L
 )

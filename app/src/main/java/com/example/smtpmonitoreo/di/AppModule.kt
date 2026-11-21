@@ -16,6 +16,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import com.example.smtpmonitoreo.data.tracking.LocationTracker
+import com.example.smtpmonitoreo.data.tracking.ServiceLocationTracker
+import org.koin.android.ext.koin.androidContext
 
 val firebaseModule = module {
     single { FirebaseAuth.getInstance() }
@@ -27,6 +30,7 @@ val dataModule = module {
     single<MonitoringRepository> { MonitoringRepositoryImpl(db = get(), auth = get()) }
     single<AdminRepository> { AdminRepositoryImpl(db = get(), auth = get()) }
     single { DemoSeeder(db = get()) }
+    single<LocationTracker> { ServiceLocationTracker(androidContext()) }
 }
 
 val viewModelModule = module {

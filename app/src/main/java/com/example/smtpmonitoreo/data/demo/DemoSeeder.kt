@@ -87,19 +87,19 @@ class DemoSeeder(private val db: FirebaseFirestore) {
             plate = "4521-FGH", lineNumber = "102", syndicate = "Sindicato San Cristóbal",
             vehicleType = "Minibús", latitude = perezVelasco.first, longitude = perezVelasco.second,
             heading = 180f, speedKmh = 28f, driverName = "Don Rolando Mamani",
-            isTransmitting = true, lastUpdated = now
+            isTransmitting = false, lastUpdated = now
         ),
         TransportUnit(
             plate = "2184-KLM", lineNumber = "231", syndicate = "Sindicato Pedro Domingo Murillo",
             vehicleType = "Minibús", latitude = pradoLaPaz.first, longitude = pradoLaPaz.second,
             heading = 90f, speedKmh = 32f, driverName = "Juan Carlos Condori",
-            isTransmitting = true, lastUpdated = now
+            isTransmitting = false, lastUpdated = now
         ),
         TransportUnit(
             plate = "3091-XYZ", lineNumber = "Trufi 45", syndicate = "Asociación de Trufis Zona Sur",
             vehicleType = "Trufi", latitude = miraflores.first, longitude = miraflores.second,
             heading = 45f, speedKmh = 40f, driverName = "Gonzalo Flores",
-            isTransmitting = true, lastUpdated = now
+            isTransmitting = false, lastUpdated = now
         )
     )
 

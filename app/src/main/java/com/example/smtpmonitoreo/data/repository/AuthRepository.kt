@@ -19,6 +19,8 @@ interface AuthRepository {
 
     /** Toda cuenta nueva nace como Pasajero; los demás roles los asigna un administrador. */
     suspend fun register(email: String, password: String, fullName: String): Result<UserAccount>
+    /** Vuelve a leer el perfil del usuario (rol, unidad asignada…) sin cerrar la sesión. */
+    suspend fun refreshProfile()
 
     suspend fun logout()
     fun getCurrentUser(): UserAccount?

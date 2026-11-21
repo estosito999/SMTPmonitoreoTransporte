@@ -14,4 +14,5 @@ interface AdminRepository {
     suspend fun updateUserRole(uid: String, role: UserRole): Result<Unit>
     suspend fun updateUserStatus(uid: String, status: AccountStatus): Result<Unit>
     suspend fun appendLog(level: LogLevel, source: String, message: String)
+    suspend fun assignVehicle(uid: String, plate: String?): Result<Unit>
 }

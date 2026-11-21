@@ -1,3 +1,4 @@
+
 package com.example.smtpmonitoreo.ui.dashboard
 
 import androidx.lifecycle.ViewModel
@@ -38,6 +39,7 @@ data class AdminUiState(
     val logs: List<SystemLog> = emptyList(),
     val health: SystemHealth = SystemHealth(),
     val currentEmail: String? = null,
+    val unitPlates: List<String> = emptyList(),
 
     // Cuentas (RF-50, RF-51)
     val search: String = "",
@@ -91,6 +93,7 @@ class AdminViewModel(
                     users = snap.users,
                     logs = snap.logs,
                     currentEmail = snap.currentEmail,
+                    unitPlates = snap.units.map { it.plate }.sorted(),
                     health = HealthCalculator.compute(snap.users, snap.units, snap.incidents, snap.logs)
                 )
             }
@@ -147,6 +150,27 @@ class AdminViewModel(
                 }
                 .onFailure { e ->
                     showNotice(e.localizedMessage ?: "No se pudo actualizar la cuenta.", isError = true)
+                }
+        }
+    }
+
+    fun assignVehicle(target: UserAccount, plate: String?) {
+        if (target.role != UserRole.CHOFER || target.assignedVehicleId == plate) return
+
+        viewModelScope.launch {
+            admin.assignVehicle(target.uid, plate)
+                .onSuccess {
+                    audit(
+                        if (plate == null) "quitó la unidad asignada a ${target.email}"
+                        else "asignó la unidad $plate a ${target.email}"
+                    )
+                    showNotice(
+                        if (plate == null) "Unidad desasignada de ${target.fullName}."
+                        else "Unidad $plate asignada a ${target.fullName}."
+                    )
+                }
+                .onFailure { e ->
+                    showNotice(e.localizedMessage ?: "No se pudo asignar la unidad.", isError = true)
                 }
         }
     }

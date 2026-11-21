@@ -39,7 +39,10 @@ import com.example.smtpmonitoreo.ui.components.SegmentedTabItem
 import com.example.smtpmonitoreo.ui.components.StatusPill
 import com.example.smtpmonitoreo.ui.theme.*
 import org.koin.compose.viewmodel.koinViewModel
+import com.example.smtpmonitoreo.ui.components.DropdownSelector
 
+
+private const val NO_UNIT = "Sin unidad"
 @Composable
 fun AdminDashboard(
     user: UserAccount,
@@ -109,7 +112,8 @@ fun AdminDashboard(
                     state = state,
                     onSearchChanged = viewModel::onSearchChanged,
                     onChangeRole = viewModel::changeRole,
-                    onToggleStatus = viewModel::toggleStatus
+                    onToggleStatus = viewModel::toggleStatus,
+                    onAssignVehicle = viewModel::assignVehicle
                 )
 
                 AdminTab.SISTEMA -> SistemaTab(
@@ -133,13 +137,14 @@ private fun CuentasTab(
     state: AdminUiState,
     onSearchChanged: (String) -> Unit,
     onChangeRole: (UserAccount, UserRole) -> Unit,
-    onToggleStatus: (UserAccount) -> Unit
+    onToggleStatus: (UserAccount) -> Unit,
+    onAssignVehicle: (UserAccount, String?) -> Unit
 ) {
     SectionLabel("CUENTAS REGISTRADAS Y PERMISOS (${state.users.size})", RoleAdminColor)
     Spacer(modifier = Modifier.height(8.dp))
     Text(
         text = "Las cuentas se crean cuando cada persona se registra en la app (siempre como Pasajero). " +
-                "Desde aquí le asignas su rol o la suspendes.",
+                "Desde aquí le asignas su rol, la unidad (si es chofer) o la suspendes.",
         fontSize = 11.sp,
         color = TextSecondary
     )
@@ -167,8 +172,10 @@ private fun CuentasTab(
         UserCard(
             account = account,
             isMe = state.currentEmail?.equals(account.email, ignoreCase = true) == true,
+            unitPlates = state.unitPlates,
             onChangeRole = { role -> onChangeRole(account, role) },
-            onToggleStatus = { onToggleStatus(account) }
+            onToggleStatus = { onToggleStatus(account) },
+            onAssignVehicle = { plate -> onAssignVehicle(account, plate) }
         )
     }
 }
@@ -177,8 +184,10 @@ private fun CuentasTab(
 private fun UserCard(
     account: UserAccount,
     isMe: Boolean,
+    unitPlates: List<String>,
     onChangeRole: (UserRole) -> Unit,
-    onToggleStatus: () -> Unit
+    onToggleStatus: () -> Unit,
+    onAssignVehicle: (String?) -> Unit
 ) {
     val suspended = account.status == AccountStatus.SUSPENDIDO
 
@@ -221,6 +230,18 @@ private fun UserCard(
                     onClick = { onChangeRole(role) }
                 )
             }
+        }
+
+        // Solo los choferes tienen una unidad asignada
+        if (account.role == UserRole.CHOFER) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text("Unidad asignada", fontSize = 12.sp, color = TextSecondary)
+            Spacer(modifier = Modifier.height(6.dp))
+            DropdownSelector(
+                value = account.assignedVehicleId ?: NO_UNIT,
+                options = listOf(NO_UNIT) + unitPlates,
+                onSelect = { onAssignVehicle(it.takeUnless { v -> v == NO_UNIT }) }
+            )
         }
 
         TextButton(onClick = onToggleStatus) {
