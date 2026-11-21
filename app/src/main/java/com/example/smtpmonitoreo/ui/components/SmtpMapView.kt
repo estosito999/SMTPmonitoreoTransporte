@@ -49,6 +49,9 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.util.MapTileIndex
+import com.example.smtpmonitoreo.BuildConfig
 
 /** Punto fijo con etiqueta (por ejemplo A = origen, B = destino). */
 data class MapPin(
@@ -161,7 +164,7 @@ fun SmtpMapView(
 }
 
 private fun createLaPazMapView(context: Context): MapView = MapView(context).apply {
-    setTileSource(TileSourceFactory.MAPNIK)
+    setTileSource(MapTilerDark)
     setMultiTouchControls(true)
     zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
     isTilesScaledToDpi = true
@@ -272,4 +275,15 @@ private fun MapView.render(
         }
 
     invalidate()
+}
+private val MapTilerDark = object : OnlineTileSourceBase(
+    "MapTilerDarkSMTP", 0, 19, 256, ".png",
+    arrayOf("https://api.maptiler.com/maps/streets-v2-dark/256/"),
+    "© MapTiler © OpenStreetMap contributors"
+) {
+    override fun getTileURLString(pMapTileIndex: Long): String =
+        baseUrl +
+                MapTileIndex.getZoom(pMapTileIndex) + "/" +
+                MapTileIndex.getX(pMapTileIndex) + "/" +
+                MapTileIndex.getY(pMapTileIndex) + ".png?key=" + BuildConfig.MAPTILER_KEY
 }

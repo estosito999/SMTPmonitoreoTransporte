@@ -11,20 +11,20 @@ class SmtpApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        Configuration.getInstance().apply {
+            load(this@SmtpApp, getSharedPreferences("osmdroid", MODE_PRIVATE))
+            userAgentValue = "SMTPPaceno/${BuildConfig.VERSION_NAME} " +
+                    "(Android; UMSA Sistemas Moviles II; coddycasas@gmail.com)"
+            osmdroidBasePath = File(filesDir, "osmdroid")
+            osmdroidTileCache = File(osmdroidBasePath, "tiles")
+            tileFileSystemCacheMaxBytes = 300L * 1024 * 1024
+            tileFileSystemCacheTrimBytes = 250L * 1024 * 1024
+            expirationOverrideDuration = 7L * 24 * 60 * 60 * 1000
+        }
+
         startKoin {
             androidContext(this@SmtpApp)
             modules(appModules)
-        }
-
-        Configuration.getInstance().apply {
-            load(
-                this@SmtpApp,
-                getSharedPreferences("osmdroid", MODE_PRIVATE)
-            )
-            userAgentValue = packageName
-            // Caché de teselas en el almacenamiento privado de la app
-            osmdroidBasePath = File(cacheDir, "osmdroid")
-            osmdroidTileCache = File(osmdroidBasePath, "tiles")
         }
     }
 }
