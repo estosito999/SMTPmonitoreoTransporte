@@ -29,10 +29,13 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import com.example.smtpmonitoreo.domain.NetworkMonitor
+import com.example.smtpmonitoreo.data.model.LogLevel
+import com.example.smtpmonitoreo.domain.AppMonitor
 
 class LocationTrackingService : Service() {
 
     private val monitoring: MonitoringRepository by inject()
+    private val appMonitor: AppMonitor by inject()
     private val network: NetworkMonitor by inject()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val fused by lazy { LocationServices.getFusedLocationProviderClient(this) }
@@ -101,6 +104,8 @@ class LocationTrackingService : Service() {
 
         TrackingState.setRunning(true)
         if (firstStart) {
+            appMonitor.log(LogLevel.INFO, "GPS", "Unidad $newPlate inició la transmisión (cada ${seconds}s)")
+            appMonitor.trackEvent("tracking_started", mapOf("interval_s" to seconds.toString()))
             serviceScope.launch {
                 try {
                     monitoring.startGpsTransmission(newPlate)
@@ -133,6 +138,7 @@ class LocationTrackingService : Service() {
 
     private fun fail(message: String) {
         TrackingState.setError(message)
+        appMonitor.log(LogLevel.WARN, "GPS", "No se pudo transmitir: $message")
         stopSelf()
     }
 
@@ -184,6 +190,7 @@ class LocationTrackingService : Service() {
         TrackingState.setRunning(false)
 
         if (lastPlate != null) {
+            appMonitor.log(LogLevel.INFO, "GPS", "Unidad $lastPlate finalizó la transmisión")
             // Escritura final: no debe cancelarse junto con el servicio
             CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                 try {

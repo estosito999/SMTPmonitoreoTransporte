@@ -120,7 +120,9 @@ fun AdminDashboard(
                     state = state,
                     onLogFilterSelected = viewModel::onLogFilterSelected,
                     onSwitchRolePreview = onSwitchRolePreview,
-                    onSeedDemoData = viewModel::seedDemoData
+                    onSeedDemoData = viewModel::seedDemoData,
+                    onTestError = viewModel::recordTestError,
+                    onTestCrash = viewModel::forceTestCrash
                 )
             }
 

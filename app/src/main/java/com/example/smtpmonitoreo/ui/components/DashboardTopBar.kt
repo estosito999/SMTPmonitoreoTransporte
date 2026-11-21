@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.smtpmonitoreo.data.model.UserAccount
 import com.example.smtpmonitoreo.data.model.UserRole
 import com.example.smtpmonitoreo.ui.theme.*
+import com.example.smtpmonitoreo.BuildConfig
 
 @Composable
 fun DashboardTopBar(
@@ -80,7 +81,7 @@ fun DashboardTopBar(
                             color = CyberCyan.copy(alpha = 0.15f)
                         ) {
                             Text(
-                                text = "v1.0",
+                                text = "v${BuildConfig.VERSION_NAME}",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = CyberCyan,

@@ -53,12 +53,20 @@ internal fun <T : Any> Flow<UserAccount?>.listenTo(
 }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
 /** Ejecuta el bloque y traduce cualquier error de Firebase a un mensaje para el usuario. */
+/** Punto de enganche para reportar errores inesperados de las escrituras (lo configura SmtpApp). */
+internal object WriteErrorReporter {
+    @Volatile
+    var onError: ((Exception) -> Unit)? = null
+}
+
+/** Ejecuta el bloque y traduce cualquier error de Firebase a un mensaje para el usuario. */
 internal inline fun <T> resultOf(block: () -> T): Result<T> =
     try {
         Result.success(block())
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
+        WriteErrorReporter.onError?.invoke(e)
         Result.failure(AuthException(AuthErrors.toUserMessage(e), e))
     }
 /**

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.smtpmonitoreo.domain.DemoAccounts
+import com.example.smtpmonitoreo.domain.AppMonitor
 
 data class AuthUiState(
     val email: String = "",
@@ -23,7 +24,8 @@ data class AuthUiState(
 )
 
 class AuthViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val monitor: AppMonitor
 ) : ViewModel() {
 
     val session: StateFlow<SessionState> = repository.session
@@ -64,7 +66,7 @@ class AuthViewModel(
             } else {
                 repository.login(email = s.email, password = s.password)
             }
-            finish(result)
+            finish(result, event = if (s.isRegisterMode) "sign_up" else "login")
         }
     }
 
@@ -78,9 +80,12 @@ class AuthViewModel(
         viewModelScope.launch { repository.logout() }
     }
 
-    private fun finish(result: Result<*>) {
+    private fun finish(result: Result<*>, event: String) {
         result
-            .onSuccess { _uiState.value = AuthUiState() } // no conservar la contraseña en memoria
+            .onSuccess {
+                monitor.trackEvent(event, mapOf("method" to "email"))
+                _uiState.value = AuthUiState() // no conservar la contraseña en memoria
+            }
             .onFailure { e ->
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = e.localizedMessage ?: "Error en la autenticación.")

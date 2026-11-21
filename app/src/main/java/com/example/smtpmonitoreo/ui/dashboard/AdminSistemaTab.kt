@@ -41,7 +41,9 @@ internal fun SistemaTab(
     state: AdminUiState,
     onLogFilterSelected: (LogLevel?) -> Unit,
     onSwitchRolePreview: (UserRole) -> Unit,
-    onSeedDemoData: () -> Unit
+    onSeedDemoData: () -> Unit,
+    onTestError: () -> Unit,
+    onTestCrash: () -> Unit
 ) {
     val health = state.health
 
@@ -146,6 +148,20 @@ internal fun SistemaTab(
             color = RoleAdminColor,
             contentColor = DarkBackground,
             onClick = onSeedDemoData
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        ActionButton(
+            text = "REGISTRAR ERROR DE PRUEBA (CRASHLYTICS)",
+            color = CyberAmber,
+            contentColor = DarkBackground,
+            onClick = onTestError
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        ActionButton(
+            text = "FORZAR CIERRE DE PRUEBA (CRASH)",
+            color = CyberRose,
+            contentColor = TextPrimary,
+            onClick = onTestCrash
         )
         Spacer(modifier = Modifier.height(10.dp))
 

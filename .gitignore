@@ -33,3 +33,5 @@ google-services.json
 
 # Android Profiling
 *.hprof
+/smtp-release.jks
+/keystore.properties

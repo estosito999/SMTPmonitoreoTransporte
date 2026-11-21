@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
 import com.example.smtpmonitoreo.data.repository.WriteStatus
+import com.example.smtpmonitoreo.domain.AppMonitor
 
 enum class PasajeroTab { MAPA, RUTAS, REPORTAR }
 
@@ -59,7 +60,8 @@ data class PasajeroUiState(
 class PasajeroViewModel(
     private val monitoring: MonitoringRepository,
     private val auth: AuthRepository,
-    private val eta: EtaCalculator
+    private val eta: EtaCalculator,
+    private val monitor: AppMonitor
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PasajeroUiState())
@@ -179,6 +181,13 @@ class PasajeroViewModel(
                         reportQueued = status == WriteStatus.QUEUED
                     )
                 }
+                monitor.trackEvent(
+                    "incident_reported",
+                    mapOf(
+                        "category" to s.reportCategory.name,
+                        "queued" to (status == WriteStatus.QUEUED).toString()
+                    )
+                )
             }.onFailure { e ->
                 _state.update {
                     it.copy(isSending = false, reportError = e.localizedMessage ?: "No se pudo enviar el reporte.")

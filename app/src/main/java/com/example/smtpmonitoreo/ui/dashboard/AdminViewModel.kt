@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.smtpmonitoreo.BuildConfig
+import com.example.smtpmonitoreo.domain.AppMonitor
 
 private const val MAX_VISIBLE_LOGS = 50
 
@@ -72,7 +74,8 @@ class AdminViewModel(
     private val admin: AdminRepository,
     private val monitoring: MonitoringRepository,
     private val auth: AuthRepository,
-    private val seeder: DemoSeeder
+    private val seeder: DemoSeeder,
+    private val monitor: AppMonitor
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AdminUiState())
@@ -192,6 +195,18 @@ class AdminViewModel(
                     showNotice(e.localizedMessage ?: "No se pudieron cargar los datos de ejemplo.", isError = true)
                 }
         }
+    }
+    /** Solo debug: registra un error no fatal para comprobar Crashlytics. */
+    fun recordTestError() {
+        if (!BuildConfig.DEMO_MODE) return
+        monitor.recordError(RuntimeException("Error no fatal de prueba (SMTP)"), "PRUEBA")
+        showNotice("Error de prueba registrado. Aparecerá en Crashlytics al reabrir la app.")
+    }
+
+    /** Solo debug: cierra la app a propósito para comprobar Crashlytics. */
+    fun forceTestCrash() {
+        if (!BuildConfig.DEMO_MODE) return
+        throw RuntimeException("Cierre forzado de prueba (SMTP)")
     }
 
     // ---------- Utilidades ----------

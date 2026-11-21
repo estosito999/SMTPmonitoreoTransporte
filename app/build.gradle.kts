@@ -1,12 +1,20 @@
 import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val localProps = Properties().apply {
     val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+// Firma de la versión de lanzamiento (este archivo y el .jks no se suben a Git)
+val keystoreProps = Properties().apply {
+    val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
 
@@ -27,13 +35,27 @@ android {
         buildConfigField("String", "MAPTILER_KEY", "\"${localProps.getProperty("MAPTILER_KEY", "")}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystoreProps.isNotEmpty()) {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
-            // Los botones de acceso rápido por rol solo existirán en debug (se usan en el Bloque 3)
+            // Las herramientas de demostración solo existen en debug
             buildConfigField("Boolean", "DEMO_MODE", "true")
         }
         release {
             buildConfigField("Boolean", "DEMO_MODE", "false")
+            if (keystoreProps.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -68,12 +90,20 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.kotlinx.coroutines.play.services)
 
     // Mapa (OpenStreetMap) y ubicación
     implementation(libs.osmdroid.android)
     implementation(libs.osmbonuspack)
     implementation(libs.play.services.location)
+
+    // Inyección de dependencias
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.compose.viewmodel)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -82,8 +112,4 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
-    implementation(libs.koin.compose)
-    implementation(libs.koin.compose.viewmodel)
 }
